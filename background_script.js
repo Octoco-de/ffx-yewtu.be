@@ -2,6 +2,12 @@
 
   browser.webRequest.onBeforeRequest.addListener(
     function(details) {
+
+      // Do not redirect to yewtu.be if we're already on yewtu.be.
+      if (details.originUrl && details.originUrl.match(/yewtu.be\//)) {
+        return { cancel: false };
+      }
+
       // Matches any URL with ".youtube.com/", that contains
       // - "?v="
       // - or "&v="
