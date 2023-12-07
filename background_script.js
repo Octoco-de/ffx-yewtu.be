@@ -1,24 +1,27 @@
 // Put all the javascript code here, that you want to execute in background.
-// Listen for browser action clicks
-// browser.browserAction.onClicked.addListener(function(tab) {
-//     // Check if the tab is loading a YouTube video
-//     if (tab.url.match(/youtube.com*/)) {
-//       // Redirect the tab to yewtu.be
-//       browser.tabs.update(tab.id, {
-//         url: tab.url.replace('youtube.com', 'yewtu.be')
-//       });
-//     }
-//   });
 
   browser.webRequest.onBeforeRequest.addListener(
     function(details) {
-      if (details.url.match(/youtube.com\/watch\?v=.+/)) {
+
+      // Do not redirect to yewtu.be if we're already on yewtu.be.
+      if (details.originUrl && details.originUrl.match(/yewtu.be\//)) {
+        return { cancel: false };
+      }
+
+      // Matches any URL with ".youtube.com/", that contains
+      // - "?v="
+      // - or "&v="
+      // This allows handling the case where "v=" is not the first argument.
+      const matchResult = details.url.match(/\.youtube.com\/watch\?(?:.*&)?(v=[^&]+)/);
+      console.log('match:', matchResult, details);
+      if (matchResult) {
         return {
-          redirectUrl: details.url.replace('youtube.com', 'yewtu.be')
+          redirectUrl: 'https://yewtu.be/watch?' + matchResult[1]
         };
+      } else  {
+        return { cancel: false };
       }
     },
     { urls: ["<all_urls>"] },
     ["blocking"]
   );
-  
